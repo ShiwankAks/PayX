@@ -1,0 +1,52 @@
+// On-ramp	External bank → your wallet
+// Transfer	Your wallet → another user's wallet
+// Withdrawal/off-ramp	Your wallet → external bank
+// Total balance = amount + locked
+// Imagine Alice initiates a transaction that requires ₹2,000 to be reserved.
+// You don't want another request to immediately spend that same ₹2,000.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username      String
+  phone     String   @unique
+  password  String
+  balance   Balance?
+  onRampTransactions OnRampTransaction[]
+  // createdAt DateTime
+}
+
+model Balance {
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  amount Int
+  locked Int
+  user User @relation(fields: [userId] , references: [id])
+}
+
+model OnRampTransaction{
+  id Int @id @default(autoincrement())
+  status OnRampStatus
+  token String @unique
+  provider String
+  amount Int
+  startTime DateTime
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+}
+
+
+enum OnRampStatus{
+  Success
+  Failure
+  Processing
+}
