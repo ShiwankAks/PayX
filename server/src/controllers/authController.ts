@@ -100,4 +100,26 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { signup, login };
+const currentUser = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.user?.id);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { password, ...safeUser } = user;
+    return res
+      .status(200)
+      .json({ success: true, message: "User found", safeUser });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "User could not be fetched" });
+  }
+};
+
+export { signup, login, currentUser };
