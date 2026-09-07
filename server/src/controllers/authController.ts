@@ -35,7 +35,7 @@ const signup = async (req: Request, res: Response) => {
         phone,
         balance: {
           create: {
-            amount: 10000000,
+            amount: 1000000,
             locked: 0,
           },
         },
