@@ -45,13 +45,10 @@ export const transferBalance = async (req: Request, res: Response) => {
       }
       const senderBalance = sender.amount;
 
-      //   if (!senderBalance) {
-      //     throw new Error("Balance not found");
-      //   }
+      
       if (value > senderBalance) {
         throw new Error("insufficient balance");
       }
-      // console.log("before transaction start"+sender.locked)
       await txn.balance.update({
         where: {
           userId: userId,
@@ -61,7 +58,6 @@ export const transferBalance = async (req: Request, res: Response) => {
           locked: sender.locked + value,
         },
       });
-      // console.log("after locking"+sender.locked)
 
       const receiver = await txn.balance.findUnique({
         where: {
@@ -85,7 +81,7 @@ export const transferBalance = async (req: Request, res: Response) => {
       return transfer;
     });
 
-    await axios.post("http://localhost:3001/api/transfer", {
+    await axios.post("http://localhost:3001/api/p2p/transfer", {
       transferId: transfer.id,
       amount: value,
       senderId: userId,

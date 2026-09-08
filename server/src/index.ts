@@ -21,7 +21,7 @@ import webhookRouter from "./routes/webhookRoute.js"
 app.use("/api/auth",authRouter)
 app.use("/api/wallet",walletRouter)
 app.use("/api/transfer",transferRouter)
-app.use("/api/v1/webhook",webhookRouter)
+app.use("/api/webhook",webhookRouter)
 
 
 
