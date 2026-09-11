@@ -99,11 +99,30 @@ export const transferBalance = async (req: Request, res: Response) => {
 
 export const transferHistory = async (req: Request, res: Response) => {
   try {
+    const {limit} = req.query
     const userId = Number(req.user?.id);
     const history = await prisma.transfer.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
       },
+      orderBy:{
+        createdAt:"desc"
+      },
+       ...(limit? {take:Number(limit)}:{}),
+       include:{
+        sender:{
+          select:{
+            id:true,
+            username:true
+          }
+        },
+        receiver:{
+          select:{
+            id:true,
+            username:true
+          }
+        }
+       }
     });
     return res
       .status(200)

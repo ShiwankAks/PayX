@@ -22,8 +22,8 @@ model User {
   password           String
   balance            Balance?
   onRampTransactions OnRampTransaction[]
-  sentTransfers      transfer[]          @relation("SentTransfers")
-  receivedTransfers  transfer[]          @relation("ReceivedTransfers")
+  sentTransfers      Transfer[]          @relation("SentTransfers")
+  receivedTransfers  Transfer[]          @relation("ReceivedTransfers")
 }
 
 model Balance {
@@ -31,7 +31,7 @@ model Balance {
   userId Int  @unique
   amount Int
   locked Int
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OnRampTransaction {
@@ -45,7 +45,7 @@ model OnRampTransaction {
   user      User         @relation(fields: [userId], references: [id])
 }
 
-model transfer {
+model Transfer {
   id         Int            @id @default(autoincrement())
   amount     Int
   senderId   Int

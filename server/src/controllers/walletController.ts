@@ -94,6 +94,7 @@ export const addMoney = async (req: Request, res: Response) => {
 };
 
 export const onRampTransactions = async (req: Request, res: Response) => {
+  const {limit} = req.query
   try {
     if (!req.user) {
       throw new Error("Unauthorized")
@@ -102,7 +103,11 @@ export const onRampTransactions = async (req: Request, res: Response) => {
     const transactions = await prisma.onRampTransaction.findMany({
       where:{
         userId
-      }
+      },
+      orderBy:{
+        startTime:"desc"
+      },
+      ...(limit? {take:Number(limit)}:{})
     })
     return res.status(200).json({success:true, message:"On-Ramp transactions fetched",transactions})
   } catch (error) {

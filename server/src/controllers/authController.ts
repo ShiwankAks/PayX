@@ -20,8 +20,7 @@ const signup = async (req: Request, res: Response) => {
       },
     });
     if (userExist) {
-      return res.json({
-        status: 409,
+      return res.status(409).json({
         message: "Email or phone number already registered",
       });
     }
@@ -106,6 +105,9 @@ const currentUser = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
+      },
+      include: {
+        balance: true,
       },
     });
     if (!user) {
