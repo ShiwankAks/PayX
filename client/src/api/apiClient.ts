@@ -16,7 +16,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    Promise.reject(error);
+    return Promise.reject(error);
   },
 );
 
@@ -25,9 +25,9 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // localStorage.clear();
+    localStorage.clear();
     if (error.response?.status == 401) {
-        // window.location.href = "/login";
+        window.location.href = "/login";
     }
     
     return Promise.reject(error);

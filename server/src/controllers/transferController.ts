@@ -15,7 +15,7 @@ export const findReciever = async (req: Request, res: Response) => {
         id: true,
         username: true,
         phone: true,
-        email:true
+        email: true,
       },
     });
 
@@ -33,6 +33,10 @@ export const transferBalance = async (req: Request, res: Response) => {
     const userId = Number(req.user?.id);
     const receiverId = Number(req.body.receiverId);
 
+    if (userId === receiverId) {
+        throw new Error("Cannot transfer to yourself");
+      }
+
     const { value } = req.body;
 
     const transfer = await prisma.$transaction(async (txn) => {
@@ -46,10 +50,18 @@ export const transferBalance = async (req: Request, res: Response) => {
       }
       const senderBalance = sender.amount;
 
-      
-      if (value > senderBalance) {
-        throw new Error("insufficient balance");
+      const receiver = await txn.balance.findUnique({
+        where: {
+          userId: receiverId,
+        },
+      });
+      if (!receiver) {
+        throw new Error("Receiver not found");
       }
+
+      
+      if (value > senderBalance) throw new Error("insufficient balance");
+
       await txn.balance.update({
         where: {
           userId: userId,
@@ -60,38 +72,38 @@ export const transferBalance = async (req: Request, res: Response) => {
         },
       });
 
-      const receiver = await txn.balance.findUnique({
+      await txn.balance.update({
         where: {
           userId: receiverId,
         },
-      });
-      if (!receiver) {
-        throw new Error("Receiver not found");
-      }
-
-      const transfer = await txn.transfer.create({
         data: {
-          amount: value,
-          senderId: userId,
-          receiverId: receiverId,
-          status: "Processing",
+          amount: receiver.amount + value,
         },
       });
 
-      // console.log("Transfer created:", transfer);
-      return transfer;
-    });
+      await txn.balance.update({
+        where: {
+          userId: userId,
+        },
+        data: {
+          locked: sender.locked - value,
+        },
+      });
 
-    await axios.post(`${process.env.BANK_URL}/p2p/transfer`, {
-      transferId: transfer.id,
-      amount: value,
-      senderId: userId,
-      receiverId: receiverId,
+      const newTransfer = await txn.transfer.create({
+        data: {
+          amount: value,
+          status: "Success",
+          senderId: userId,
+          receiverId: receiverId,
+        },
+      });
+      return newTransfer;
     });
 
     return res
       .status(200)
-      .json({ success: true, message: "Transfer successful" });
+      .json({ success: true, transfer, message: "Transfer successful" });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: "Transfer failed" });
@@ -100,30 +112,30 @@ export const transferBalance = async (req: Request, res: Response) => {
 
 export const transferHistory = async (req: Request, res: Response) => {
   try {
-    const {limit} = req.query
+    const { limit } = req.query;
     const userId = Number(req.user?.id);
     const history = await prisma.transfer.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
       },
-      orderBy:{
-        createdAt:"desc"
+      orderBy: {
+        createdAt: "desc",
       },
-       ...(limit? {take:Number(limit)}:{}),
-       include:{
-        sender:{
-          select:{
-            id:true,
-            username:true
-          }
+      ...(limit ? { take: Number(limit) } : {}),
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+          },
         },
-        receiver:{
-          select:{
-            id:true,
-            username:true
-          }
-        }
-       }
+        receiver: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
     });
     return res
       .status(200)
