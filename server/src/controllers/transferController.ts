@@ -15,6 +15,7 @@ export const findReciever = async (req: Request, res: Response) => {
         id: true,
         username: true,
         phone: true,
+        email:true
       },
     });
 
@@ -30,7 +31,7 @@ export const findReciever = async (req: Request, res: Response) => {
 export const transferBalance = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user?.id);
-    const receiverId = Number(req.params.receiverId);
+    const receiverId = Number(req.body.receiverId);
 
     const { value } = req.body;
 
@@ -81,7 +82,7 @@ export const transferBalance = async (req: Request, res: Response) => {
       return transfer;
     });
 
-    await axios.post("http://localhost:3001/api/p2p/transfer", {
+    await axios.post(`${process.env.BANK_URL}/p2p/transfer`, {
       transferId: transfer.id,
       amount: value,
       senderId: userId,

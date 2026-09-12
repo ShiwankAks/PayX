@@ -1,3 +1,14 @@
+export type User = {
+  id: number,
+  username: string,
+  phone: string,
+  email: string,
+  balance:{
+    amount:number
+    locked:number
+  }
+}
+
 export type Transfer = {
   id: number
   amount: number // paisa

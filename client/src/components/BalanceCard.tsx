@@ -1,41 +1,18 @@
-import { useEffect, useState } from "react"
-import { authService } from "../api/authService"
+import { useAuth } from "../context/AuthContext"
+import { rupees } from "../utils/formatCurrency"
 
 
 function BalanceCard() {
-    const [balance, setBalance] = useState<number>(0)
-    const [lockedBalance, setLockedBalance] = useState<number>(0)
-    
+    const { user } = useAuth()
 
-    async function getDetails() {
-        try {
-            const res = await authService.currentUser()
-            const user = res.data.safeUser
-            // console.log(user)
-            if (!user.balance.amount) {
-                throw new Error("Cannot fetch user")
-            }
-        const intBalance = user.balance.amount/100
-        const intLocked = user.balance.locked/100
-        // console.log(intBalance,intLocked)
-        setBalance(intBalance)
-        setLockedBalance(intLocked)
-        
-
-        } catch (error) {
-            console.log("could not fetch balance")
-        }
+    if (!user || !user.balance.amount) {
+        return <div>Error</div>
     }
 
-    const formatedBalance = new Intl.NumberFormat("en-IN").format(balance)
-    const formatedLocked = new Intl.NumberFormat("en-IN").format(lockedBalance)
-    const total = (balance) + (lockedBalance)
-    const totalFormated = new Intl.NumberFormat("en-IN").format(total)
-
-    useEffect(() => {
-        getDetails()
-    }, [])
-
+    const formatedBalance = rupees(user.balance.amount)
+    const formatedLocked = rupees(user.balance.locked)
+    const total = user.balance.amount + user.balance.locked
+    const totalFormated = rupees(total)
 
     return (
         <div className="overflow-hidden rounded-2xl bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-700/20">
@@ -47,7 +24,7 @@ function BalanceCard() {
                             Available Balance
                         </p>
                         <p className="mt-1.5 text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
-                            ₹{formatedBalance}
+                            {formatedBalance}
                         </p>
                     </div>
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
@@ -74,7 +51,7 @@ function BalanceCard() {
                             Total Balance
                         </p>
                         <p className="mt-1 text-lg font-semibold tabular-nums">
-                            ₹{totalFormated}
+                            {totalFormated}
                         </p>
                     </div>
                     <div>
@@ -102,7 +79,7 @@ function BalanceCard() {
                         <path d="M12 8h.01" />
                     </svg>
                     <p className="text-xs text-indigo-100">
-                        ₹{lockedBalance} currently reserved for pending transactions
+                        {formatedLocked} currently reserved for pending transactions
                     </p>
                 </div>
             </div>

@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import TransactionRow from './TransactionRow'
 import { userService } from '../api/userService'
-import { authService } from '../api/authService'
 import type { OnRampTransaction, Transfer } from '../types/types'
+import { useAuth } from '../context/AuthContext'
 
 // --- Local helper -----------------------------------------------------------
 
@@ -25,18 +25,9 @@ function RecentTransactions() {
   const [view, setView] = useState<ViewState>('loaded')
   const [allTransfers, setAllTransfers] = useState<Transfer[]>([])
   const [allOnRampTrans, setAllOnRampTrans] = useState<OnRampTransaction[]>([])
-  const [currentUserId, setCurrentUserId] = useState<number | undefined>()
+  const {user, loading} = useAuth()
 
-  const getCurrentUser = async () => {
-      setView("loading")
-      try {
-        const res = await authService.currentUser()
-        setCurrentUserId(res.data.safeUser.id)
-      } catch (error) {
-        setView("error")
-      }
-    }
-  
+ 
     const getTransfers = async () => {
       setView("loading")
       try {
@@ -62,9 +53,15 @@ function RecentTransactions() {
 
     useEffect(() => {
         getTransfers()
-        getCurrentUser()
         getOnRampTrans()
       }, [])
+
+      if (!user) {
+        return <div>User not found</div>
+      }
+      if (loading) {
+        return <div>Loading</div>
+      }
     
   const tabClass = (active: boolean) =>
     `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${active
@@ -116,7 +113,7 @@ function RecentTransactions() {
       {view === 'loaded' && tab === 'transfers' && (
         <ul className="divide-y divide-slate-100">
           {allTransfers.map((t) => {
-            const incoming = t.receiverId === currentUserId
+            const incoming = t.receiverId === user.id
             const other = incoming? t.sender.username : t.receiver.username 
             return (
               <TransactionRow

@@ -1,48 +1,51 @@
-import { useState } from 'react'
+import {  useState } from 'react'
 import Navbar from '../components/Navbar'
+import { useAuth } from '../context/AuthContext'
+import { rupees } from '../utils/formatCurrency'
+import { userService } from '../api/userService'
 
-/**
- * UI-only prototype. No API calls, no backend logic.
- *
- * Notes tied to the real Prisma `OnRampTransaction` model:
- * - Stores amount (integer PAISA), provider, status, startTime, token, userId.
- * - There is no description/direction field. On-ramp is always money entering
- *   the wallet. Later you'll send amount + provider for the logged-in user.
- */
 
 // Mock providers (map to the `provider` string field).
 const providers = ['Axis Bank', 'HDFC Bank', 'ICICI Bank', 'SBI']
 
-// Available balance shown on the page (paisa, like the DB). Mock value.
-const AVAILABLE_BALANCE_PAISA = 1245000
-
-// UI-only submit state for demoing loading/success/error visuals.
 type SubmitState = 'idle' | 'loading' | 'success' | 'error'
 
-function rupees(paisa: number): string {
-  return `₹${(paisa / 100).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
+
 
 function AddMoney() {
   const [amount, setAmount] = useState('')
   const [provider, setProvider] = useState<string | null>(null)
   const [submit, setSubmit] = useState<SubmitState>('idle')
 
-  const amountNumber = Number(amount)
-  const amountValid = amount !== '' && amountNumber > 0
-  const canAdd = amountValid && provider !== null && submit !== 'loading'
+  const {user, getUser} = useAuth()
+  if (!user) {
+    return <div>Error</div>
+  }
+  
 
-  // Demo-only: fakes a request so you can see the visual states.
-  // Replace with your real add-money call later.
-  function handleAdd() {
+  const amountpaise = Number(amount)*100
+  const amountValid = amount !== '' && amountpaise > 0
+  const canAdd = amountValid && provider !== null && submit !== 'loading'
+  
+  const availableBalance = rupees(user.balance.amount)
+
+
+  const handleAdd = async()=>{
+
     if (!canAdd) return
     setSubmit('loading')
-    window.setTimeout(() => setSubmit('success'), 1200)
+    try {
+      await userService.addMoney(amountpaise,provider)
+      await getUser()
+      setSubmit("success")
+    } catch (error) {
+      setSubmit("error")
+    }
+    
   }
 
+ 
+  
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -63,7 +66,9 @@ function AddMoney() {
           <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
             <span className="text-sm text-slate-500">Available balance</span>
             <span className="text-base font-semibold tabular-nums text-slate-900">
-              {rupees(AVAILABLE_BALANCE_PAISA)}
+              
+              {availableBalance}
+            
             </span>
           </div>
 
@@ -169,7 +174,7 @@ function AddMoney() {
                 <div className="flex justify-between">
                   <dt className="text-slate-500">Amount</dt>
                   <dd className="font-semibold tabular-nums text-slate-900">
-                    ₹{amountNumber.toLocaleString('en-IN')}
+                    {rupees(amountpaise)}
                   </dd>
                 </div>
                 <div className="flex justify-between">

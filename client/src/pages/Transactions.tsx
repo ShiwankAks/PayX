@@ -2,39 +2,11 @@ import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import TransactionRow from '../components/TransactionRow'
 import { userService } from '../api/userService'
-import { authService } from '../api/authService'
+// import { authService } from '../api/authService'
 import type { OnRampTransaction, Transfer } from '../types/types'
+import { useAuth } from '../context/AuthContext'
 
 
-
-// Mirrors Prisma `Transfer`.
-// type Transfer = {
-//   id: number
-//   amount: number // paisa
-//   senderId: number
-//   receiverId: number
-//   sender: {
-//     id: number,
-//     username: string,
-//     email: string
-//   }
-//   receiver: {
-//     id: number,
-//     username: string,
-//     email: string
-//   }
-//   status: 'Processing' | 'Success' | 'Failed'
-//   createdAt: string // ISO
-// }
-
-// Mirrors Prisma `OnRampTransaction`.
-// type OnRampTransaction = {
-//   id: number
-//   amount: number // paisa
-//   provider: string
-//   startTime: string // ISO
-//   status: 'Success' | 'Failure' | 'Processing'
-// }
 
 
 // ISO -> "9 Sep 2026, 2:14 PM" (full history shows the year).
@@ -54,7 +26,7 @@ function Transactions() {
   const [view, setView] = useState<ViewState>('loaded')
   const [allTransfers, setAllTransfers] = useState<Transfer[]>([])
   const [allOnRampTrans, setAllOnRampTrans] = useState<OnRampTransaction[]>([])
-  const [currentUserId, setCurrentUserId] = useState<number | undefined>()
+  
 
   const tabClass = (active: boolean) =>
     `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${active
@@ -62,16 +34,8 @@ function Transactions() {
       : 'text-slate-500 hover:text-slate-900'
     }`
 
-  const getCurrentUser = async () => {
-    setView("loading")
-    try {
-      const res = await authService.currentUser()
-      setCurrentUserId(res.data.safeUser.id)
-    } catch (error) {
-      setView("error")
-    }
-  }
-
+  const { user, loading } = useAuth()
+ 
   const getTransfers = async () => {
     setView("loading")
     try {
@@ -83,24 +47,31 @@ function Transactions() {
     }
   }
 
-  const getOnRampTrans =async ()=>{
+  const getOnRampTrans = async () => {
     try {
       setView("loading")
       const res = await userService.getOnrampTransactions()
-    setAllOnRampTrans(res.data.transactions)
-    setView("loaded")
+      setAllOnRampTrans(res.data.transactions)
+      setView("loaded")
     } catch (error) {
       setView("error")
     }
-    
+
   }
 
   useEffect(() => {
     getTransfers()
-    getCurrentUser()
+    // getCurrentUser()
     getOnRampTrans()
   }, [])
 
+   if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
+    return <div>Could not fetch user</div>
+  }
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -140,7 +111,7 @@ function Transactions() {
 
             {/* UI-only: preview the loading/empty/error states. Remove when
                 you wire real data. */}
-            <div className="inline-flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+            {/* <div className="inline-flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
               {(['loaded', 'loading', 'empty', 'error'] as ViewState[]).map(
                 (s) => (
                   <button
@@ -156,7 +127,7 @@ function Transactions() {
                   </button>
                 ),
               )}
-            </div>
+            </div> */}
           </div>
 
           {/* Card */}
@@ -174,8 +145,8 @@ function Transactions() {
             {view === 'loaded' && tab === 'transfers' && (
               <ul className="divide-y divide-slate-100">
                 {allTransfers.map((t) => {
-                  const incoming = t.receiverId === currentUserId
-                  const name = incoming ? t.receiver.username : t.sender.username
+                  const incoming = t.receiverId === user.id
+                  const name = incoming ? t.sender.username : t.receiver.username
                   return (
                     <TransactionRow
                       key={t.id}

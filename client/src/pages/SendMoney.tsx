@@ -1,66 +1,58 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
+import type { User } from '../types/types'
+import { useAuth } from '../context/AuthContext'
+import { userService } from '../api/userService'
+import { rupees } from '../utils/formatCurrency'
 
-/**
- * UI-only prototype. No API calls, no backend logic.
- *
- * Notes tied to the real Prisma `Transfer` model:
- * - A transfer stores amount (integer PAISA), senderId, receiverId, status,
- *   createdAt. There is no recipientName/description/direction field.
- * - The recipient here is a mock User. Later you'll send the selected user's
- *   id as receiverId; the sender is the logged-in user.
- */
 
-// Mock wallet users (stand-in for the User model: id, username, email, phone).
-const mockUsers = [
-  { id: 42, username: 'rahul', email: 'rahul@example.com', phone: '9876543210' },
-  { id: 57, username: 'aman', email: 'aman@example.com', phone: '9812345678' },
-  { id: 88, username: 'priya', email: 'priya@example.com', phone: '9900112233' },
-  { id: 91, username: 'sneha', email: 'sneha@example.com', phone: '9765432109' },
-]
 
-type User = (typeof mockUsers)[number]
 
-// Available balance shown on the page (paisa, like the DB). Mock value.
-const AVAILABLE_BALANCE_PAISA = 1245000
-
-// UI-only submit state for demoing loading/success/error visuals.
 type SubmitState = 'idle' | 'loading' | 'success' | 'error'
-
-function rupees(paisa: number): string {
-  return `₹${(paisa / 100).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
 
 function SendMoney() {
   const [query, setQuery] = useState('')
   const [recipient, setRecipient] = useState<User | null>(null)
   const [amount, setAmount] = useState('')
   const [submit, setSubmit] = useState<SubmitState>('idle')
+  const [allReceiptents, setAllReceiptents] = useState<User[]>([])
+ 
+  const {user, getUser} = useAuth()
+  
+  const getRecievers = async()=>{
+    try {
+      const response = await userService.getReceivers()
+    setAllReceiptents(response.data.users)
+    console.log(response.data.users)
+    } catch (error) {
+      
+    }
+    
+  }
 
-  const results = query.trim()
-    ? mockUsers.filter((u) => {
-        const q = query.toLowerCase()
-        return (
-          u.username.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q) ||
-          u.phone.includes(q)
-        )
-      })
-    : mockUsers
-
-  const amountNumber = Number(amount)
+  const amountNumber = Number(amount)*100
   const amountValid = amount !== '' && amountNumber > 0
   const canSend = recipient !== null && amountValid && submit !== 'loading'
 
-  // Demo-only: fakes a request so you can see the visual states.
-  // Replace with your real transfer call later.
-  function handleSend() {
+
+  const  handleSend = async()=> {
     if (!canSend) return
     setSubmit('loading')
-    window.setTimeout(() => setSubmit('success'), 1200)
+    try {
+      await userService.sendMoney(amountNumber,recipient.id)
+      await getUser()
+      setSubmit("success")
+    } catch (error) {
+      setSubmit("error")
+    }
+      }
+
+  useEffect(()=>{
+    getRecievers()
+  },[])
+
+  if (!user) {
+    return <div>Error</div>
   }
 
   return (
@@ -83,7 +75,7 @@ function SendMoney() {
           <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
             <span className="text-sm text-slate-500">Available balance</span>
             <span className="text-base font-semibold tabular-nums text-slate-900">
-              {rupees(AVAILABLE_BALANCE_PAISA)}
+              {rupees(user.balance.amount)}
             </span>
           </div>
 
@@ -142,12 +134,12 @@ function SendMoney() {
 
                 {/* Results */}
                 <ul className="mt-3 divide-y divide-slate-100">
-                  {results.length === 0 && (
+                  {allReceiptents.length === 0 && (
                     <li className="py-6 text-center text-sm text-slate-500">
                       No users found for “{query}”.
                     </li>
                   )}
-                  {results.map((u) => (
+                  {allReceiptents.map((u) => (
                     <li key={u.id}>
                       <button
                         type="button"
@@ -165,7 +157,7 @@ function SendMoney() {
                             @{u.username}
                           </span>
                           <span className="block truncate text-xs text-slate-500">
-                            {u.email} · {u.phone}
+                            {u.email}
                           </span>
                         </span>
                       </button>

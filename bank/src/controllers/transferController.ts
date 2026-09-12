@@ -12,7 +12,7 @@ export const bankTransfer = async (req: Request, res: Response) => {
         setTimeout(resolve, 1000)
     })
     ;
-    const response = await axios.post("http://localhost:3000/api/webhook/verify-payment", {
+    const response = await axios.post(`${process.env.BACKEND_URL}/webhook/verify-payment`, {
       transferId,
       amount,
       senderId,

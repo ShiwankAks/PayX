@@ -61,7 +61,7 @@ export const addMoney = async (req: Request, res: Response) => {
     transactionId = transaction.id;
     let details;
     try {
-      details = await axios.post("http://localhost:3001/api/b2p/transfer-bank", {
+      details = await axios.post(`${process.env.BANK_URL}/b2p/transfer-bank`, {
         transactionId: transactionId,
         token,
         amount

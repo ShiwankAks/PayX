@@ -5,7 +5,7 @@ import { findReciever, transferBalance, transferHistory } from '../controllers/t
 
 const transferRouter = express.Router()
 
-transferRouter.post("/transfer-balance/:receiverId",verifyToken,transferBalance)
+transferRouter.post("/transfer-balance",verifyToken,transferBalance)
 transferRouter.get("/users",verifyToken,findReciever)
 transferRouter.get("/transfer-history",verifyToken,transferHistory)
 

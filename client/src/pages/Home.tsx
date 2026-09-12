@@ -1,25 +1,20 @@
-import { useEffect, useState } from 'react'
 import BalanceCard from '../components/BalanceCard'
 import Navbar from '../components/Navbar'
 import QuickActions from '../components/QuickActions'
 import RecentTransactions from '../components/RecentTransactions'
-import { authService } from '../api/authService'
+import { useAuth } from '../context/AuthContext'
 
 function Home() {
-  const [username,setUsername] = useState() 
-  const getUser = async()=>{
-    try {
-      const res = await authService.currentUser()
-      console.log(res.data.safeUser)
-      setUsername(res.data.safeUser.username)
-    } catch (error) {
-      console.log("Cannot fetch user")
-    }
+
+  const {user, loading} = useAuth()
+  
+  if (loading) {
+  return <div>Loading...</div>;
+}
+  if (!user) {
+    return <div>Could not fetch user</div>
   }
 
-  useEffect(()=>{
-    getUser()
-  },[])
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -29,7 +24,7 @@ function Home() {
           {/* Greeting */}
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Good morning, {username}
+              Good morning, {user.username}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Here's what's happening with your wallet today.

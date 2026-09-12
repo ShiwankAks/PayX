@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { z } from 'zod'
 import { authService } from "../api/authService";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 
 const loginSchema = z.object({
@@ -41,6 +43,7 @@ function Login() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const navigate = useNavigate()
+    const { getUser } = useAuth()
 
     // Update a field's value and clear its error as the user types.
     function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -58,7 +61,7 @@ function Login() {
         if (!result.success) {
             const nextErrors: FormErrors = {}
 
-            result.error.issues.forEach(issue=>{
+            result.error.issues.forEach(issue => {
                 const field = issue.path[0] as keyof FormValues
                 nextErrors[field] = issue.message
             })
@@ -70,24 +73,28 @@ function Login() {
 
         setLoading(true);
         try {
-            const res = await authService.login(values.email,values.password)
-
-
-            const data =  res.data;
-
+            const res = await authService.login(values.email, values.password)
+            const data = res.data;
+            // console.log(data)
             // The backend returns a normal response for failures like a bad
             // password, so check both the body flags and the token presence.
-            if (data.success === false || data.status >=400 || !data.token) {
+            if (data.success === false || data.status >= 400 || !data.token) {
                 throw new Error(data.message ?? "Something went wrong.");
             }
 
             // Store the JWT for authenticated requests later on.
             localStorage.setItem("token", data.token);
+            await getUser()
             navigate("/")
             setSuccess(data.message ?? "Logged in successfully.");
             setValues(initialValues);
-        } catch (err:any) {
-            setServerError(err.message || "Something went wrong.");
+        } catch (err: any) {
+            if (axios.isAxiosError(err)) {
+                setServerError(err.response?.data.message ?? "Something went wrong.")
+            } else {
+                setServerError("Something went wrong.");
+            }
+
         } finally {
             setLoading(false);
         }

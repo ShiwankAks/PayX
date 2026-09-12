@@ -12,7 +12,7 @@ export const onRampTransfer = async (req: Request, res: Response) => {
     });
 
     const resp = await axios.post(
-      "http://localhost:3000/api/webhook/verify-payment-bank",
+      `${process.env.BACKEND_URL}/webhook/verify-payment-bank`,
       {
         token,
         transactionId,

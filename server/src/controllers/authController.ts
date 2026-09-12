@@ -64,11 +64,11 @@ const signup = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   try {
-    const { phone, password } = req.body;
+    const { email, password } = req.body;
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
-        phone: phone,
+        email:email,
       },
     });
     if (!user) {
