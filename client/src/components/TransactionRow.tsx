@@ -1,17 +1,6 @@
 import { rupees } from '../utils/formatCurrency'
 
-/**
- * A single transaction row, shared by the dashboard's RecentTransactions and
- * the full Transactions history page so both look identical.
- *
- * It is purely presentational: each page derives the display values
- * (title, subtitle, incoming/outgoing, amount, status) from its own mock
- * Transfer / OnRampTransaction data and passes them in. This component does
- * NOT know about the Prisma models and does NOT sort or limit anything.
- *
- * `status` accepts the raw values from either model
- * (Success | Processing | Failed | Failure).
- */
+
 export function TransactionRow({
   incoming,
   title,

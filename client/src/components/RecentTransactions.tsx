@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import TransactionRow from './TransactionRow'
 import { userService } from '../api/userService'
 import type { OnRampTransaction, Transfer } from '../types/types'
-import { useAuth } from '../context/AuthContext'
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
 
 // --- Local helper -----------------------------------------------------------
 
@@ -25,7 +25,7 @@ function RecentTransactions() {
   const [view, setView] = useState<ViewState>('loaded')
   const [allTransfers, setAllTransfers] = useState<Transfer[]>([])
   const [allOnRampTrans, setAllOnRampTrans] = useState<OnRampTransaction[]>([])
-  const {user, loading} = useAuth()
+  const {user} = useRequiredAuth()
 
  
     const getTransfers = async () => {
@@ -56,13 +56,7 @@ function RecentTransactions() {
         getOnRampTrans()
       }, [])
 
-      if (!user) {
-        return <div>User not found</div>
-      }
-      if (loading) {
-        return <div>Loading</div>
-      }
-    
+
   const tabClass = (active: boolean) =>
     `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${active
       ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'

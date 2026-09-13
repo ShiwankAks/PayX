@@ -18,9 +18,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User>()
   const [loading , setLoading] = useState(true)
   const getUser = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      setLoading(false)
+      return
+    }
     try {
       const res = await authService.currentUser()
-      // console.log(res.data.safeUser)
       setUser(res.data.safeUser)
     } catch (error) {
       console.log("Cannot fetch user")

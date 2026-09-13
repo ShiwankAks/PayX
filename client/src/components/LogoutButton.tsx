@@ -1,9 +1,6 @@
 import { useNavigate } from "react-router-dom"
 
-/**
- * Logout UI only. The actual logout logic (clearing session/JWT, redirect,
- * API call, etc.) is passed in via `onClick` and wired up later.
- */
+
 function LogoutButton() {
   const navigate = useNavigate()
 

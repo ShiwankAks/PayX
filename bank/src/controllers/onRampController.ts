@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import crypto from "crypto";
 
 export const onRampTransfer = async (req: Request, res: Response) => {
   try {
@@ -7,15 +8,30 @@ export const onRampTransfer = async (req: Request, res: Response) => {
     if (!token || !transactionId) {
       throw new Error("Invalid Request");
     }
+    const message = JSON.stringify({
+      token,
+      transactionId,
+    });
+
+    const signature = crypto
+      .createHmac("sha256", process.env.WEBHOOK_SECRET!)
+      .update(message)
+      .digest("hex");
     await new Promise((resolve) => {
       setTimeout(resolve, 1000);
     });
+
 
     const resp = await axios.post(
       `${process.env.BACKEND_URL}/webhook/verify-payment-bank`,
       {
         token,
         transactionId,
+      },
+      {
+        headers: {
+          "Webhook-Signature": signature,
+        },
       },
     );
     const response = resp.data;

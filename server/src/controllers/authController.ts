@@ -2,10 +2,20 @@ import { Request, Response } from "express";
 import prisma from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { loginSchema, signupSchema } from "../validation/auth.schema.js";
 
 const signup = async (req: Request, res: Response) => {
   try {
-    const { email, phone, username, password } = req.body;
+    const result = signupSchema.safeParse(req.body);
+    if (!result.success) {
+      return res
+        .status(400)
+        .json({
+          message: "Invalid signup data",
+          errors: result.error,
+        });
+    }
+    const { email, phone, username, password } = result.data;
 
     const userExist = await prisma.user.findFirst({
       where: {
@@ -64,11 +74,18 @@ const signup = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const result = loginSchema.safeParse(req.body)
+    if (!result.success) {
+      return res.status(400).json({
+          message: "Invalid login data",
+          errors: result.error,
+        })
+    }
+    const { email, password } = result.data
 
     const user = await prisma.user.findUnique({
       where: {
-        email:email,
+        email: email,
       },
     });
     if (!user) {

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../config/db.js";
 import axios from "axios";
 import crypto from "crypto";
+import { onRampSchema } from "../validation/onRamp.schema.js";
 
 export const checkBalance = async (req: Request, res: Response) => {
   try {
@@ -9,7 +10,6 @@ export const checkBalance = async (req: Request, res: Response) => {
       throw new Error("Unauthorized access");
     }
     const userId = Number(req.user.id);
-    
 
     const user = await prisma.user.findUnique({
       where: {
@@ -21,7 +21,7 @@ export const checkBalance = async (req: Request, res: Response) => {
     });
 
     if (!user || !user.balance) {
-      throw new Error("User/balance not found")
+      throw new Error("User/balance not found");
     }
     const balance = user.balance.amount;
 
@@ -37,9 +37,15 @@ export const checkBalance = async (req: Request, res: Response) => {
 };
 
 export const addMoney = async (req: Request, res: Response) => {
-  let transactionId 
+  let transactionId;
   try {
-    const { amount, provider } = req.body;
+    const result = onRampSchema.safeParse(req.body);
+    if (!result.data)
+      return res
+        .status(400)
+        .json({ error: result.error.flatten, message: "Invalid details" });
+        
+    const { amount, provider } = result.data;
     const token = crypto.randomBytes(32).toString("hex");
 
     if (req.user == undefined) {
@@ -64,7 +70,7 @@ export const addMoney = async (req: Request, res: Response) => {
       details = await axios.post(`${process.env.BANK_URL}/b2p/transfer-bank`, {
         transactionId: transactionId,
         token,
-        amount
+        amount,
       });
     } catch (error) {
       console.log(error);
@@ -81,7 +87,7 @@ export const addMoney = async (req: Request, res: Response) => {
         .json({ success: false, message: "Transaction failed" });
     }
 
-    const response = details.data
+    const response = details.data;
     return res
       .status(200)
       .json({ success: true, message: "Transaction initiated", response });
@@ -94,22 +100,28 @@ export const addMoney = async (req: Request, res: Response) => {
 };
 
 export const onRampTransactions = async (req: Request, res: Response) => {
-  const {limit} = req.query
+  const { limit } = req.query;
   try {
     if (!req.user) {
-      throw new Error("Unauthorized")
+      throw new Error("Unauthorized");
     }
-    const userId = Number(req.user.id)
+    const userId = Number(req.user.id);
     const transactions = await prisma.onRampTransaction.findMany({
-      where:{
-        userId
+      where: {
+        userId,
       },
-      orderBy:{
-        startTime:"desc"
+      orderBy: {
+        startTime: "desc",
       },
-      ...(limit? {take:Number(limit)}:{})
-    })
-    return res.status(200).json({success:true, message:"On-Ramp transactions fetched",transactions})
+      ...(limit ? { take: Number(limit) } : {}),
+    });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "On-Ramp transactions fetched",
+        transactions,
+      });
   } catch (error) {
     console.log(error);
     return res

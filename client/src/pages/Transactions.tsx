@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import TransactionRow from '../components/TransactionRow'
 import { userService } from '../api/userService'
-// import { authService } from '../api/authService'
 import type { OnRampTransaction, Transfer } from '../types/types'
-import { useAuth } from '../context/AuthContext'
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
+import Loading from '../pages/Loading'
 
 
 
@@ -34,7 +34,7 @@ function Transactions() {
       : 'text-slate-500 hover:text-slate-900'
     }`
 
-  const { user, loading } = useAuth()
+  const { user, loading } = useRequiredAuth()
  
   const getTransfers = async () => {
     setView("loading")
@@ -65,13 +65,10 @@ function Transactions() {
     getOnRampTrans()
   }, [])
 
-   if (loading) {
-    return <div>Loading...</div>
+  if (loading) {
+    return <Loading/>
   }
 
-  if (!user) {
-    return <div>Could not fetch user</div>
-  }
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />

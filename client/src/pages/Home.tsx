@@ -2,18 +2,13 @@ import BalanceCard from '../components/BalanceCard'
 import Navbar from '../components/Navbar'
 import QuickActions from '../components/QuickActions'
 import RecentTransactions from '../components/RecentTransactions'
-import { useAuth } from '../context/AuthContext'
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
+import { getGreeting } from '../utils/getGreeting'
 
 function Home() {
 
-  const {user, loading} = useAuth()
+  const {user} = useRequiredAuth()
   
-  if (loading) {
-  return <div>Loading...</div>;
-}
-  if (!user) {
-    return <div>Could not fetch user</div>
-  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -24,7 +19,7 @@ function Home() {
           {/* Greeting */}
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Good morning, {user.username}
+              {getGreeting()}, {user.username}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Here's what's happening with your wallet today.

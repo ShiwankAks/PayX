@@ -1,9 +1,38 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.js";
-
+import crypto from "crypto";
+import { webhookSchema } from "../validation/webhook.schema.js";
 
 export const verifyPaymentbank = async (req: Request, res: Response) => {
-  const { token, transactionId } = req.body;
+  
+  const result = webhookSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ message: "Invalid details" });
+  }
+
+  const { token, transactionId } = result.data;
+
+  const receivedSignature = req.headers["webhook-signature"];
+
+  if (typeof receivedSignature !== "string") {
+    return res.status(400).json({ message: "Invalid signature" });
+  }
+  const message = JSON.stringify({ token, transactionId });
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.WEBHOOK_SECRET!)
+    .update(message)
+    .digest("hex");
+
+  const received = Buffer.from(receivedSignature, "hex");
+  const expected = Buffer.from(expectedSignature, "hex");
+
+  if (received.length !== expected.length) {
+    return res.status(400).json({ message: "currupt signature" });
+  }
+
+  if (!crypto.timingSafeEqual(received, expected)) {
+    return res.status(400).json({ message: "currupt signature" });
+  }
 
   let transaction;
   try {

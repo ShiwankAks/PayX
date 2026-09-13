@@ -1,8 +1,8 @@
 import {  useState } from 'react'
 import Navbar from '../components/Navbar'
-import { useAuth } from '../context/AuthContext'
 import { rupees } from '../utils/formatCurrency'
 import { userService } from '../api/userService'
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
 
 
 // Mock providers (map to the `provider` string field).
@@ -17,10 +17,8 @@ function AddMoney() {
   const [provider, setProvider] = useState<string | null>(null)
   const [submit, setSubmit] = useState<SubmitState>('idle')
 
-  const {user, getUser} = useAuth()
-  if (!user) {
-    return <div>Error</div>
-  }
+  const {user, getUser} = useRequiredAuth()
+ 
   
 
   const amountpaise = Number(amount)*100
@@ -45,7 +43,6 @@ function AddMoney() {
   }
 
  
-  
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />

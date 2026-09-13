@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import LogoutButton from './LogoutButton'
-import { useAuth } from '../context/AuthContext'
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
 
 function Navbar() {
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const {user} = useAuth()
+  const {user} = useRequiredAuth()
 
   // Close the dropdown when clicking anywhere outside of it.
   useEffect(() => {
@@ -21,9 +21,6 @@ function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
 
-  if (!user) {
-    return <div>Error</div>
-  }
 
   const linkClass = (active: boolean) =>
     `rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-slate-100 ${active ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
@@ -87,7 +84,7 @@ function Navbar() {
             className="flex items-center gap-2.5 rounded-lg py-1.5 pl-1.5 pr-2 transition-colors hover:bg-slate-100"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
-              S
+              {user.username.slice(0,1).toUpperCase()}
             </span>
             <span className="hidden text-sm font-medium text-slate-700 sm:block">
               {user.username}

@@ -1,9 +1,9 @@
-import { useAuth } from "../context/AuthContext"
+import { useRequiredAuth } from "../hooks/useRequiredAuth"
 import { rupees } from "../utils/formatCurrency"
 
 
 function BalanceCard() {
-    const { user } = useAuth()
+    const { user } = useRequiredAuth()
 
     if (!user || !user.balance.amount) {
         return <div>Error</div>

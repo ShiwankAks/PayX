@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.js";
 import axios from "axios";
+import { transferSchema } from "../validation/transfer.schema.js";
 
 export const findReciever = async (req: Request, res: Response) => {
   try {
@@ -31,13 +32,17 @@ export const findReciever = async (req: Request, res: Response) => {
 export const transferBalance = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user?.id);
-    const receiverId = Number(req.body.receiverId);
+    const result = transferSchema.safeParse(req.body);
+    if (!result.success)
+      return res
+        .status(400)
+        .json({ error: result.error.flatten, message: "Enter valid inputs" });
+
+    const { receiverId, value } = result.data;
 
     if (userId === receiverId) {
-        throw new Error("Cannot transfer to yourself");
-      }
-
-    const { value } = req.body;
+      throw new Error("Cannot transfer to yourself");
+    }
 
     const transfer = await prisma.$transaction(async (txn) => {
       const sender = await txn.balance.findUnique({
@@ -59,7 +64,6 @@ export const transferBalance = async (req: Request, res: Response) => {
         throw new Error("Receiver not found");
       }
 
-      
       if (value > senderBalance) throw new Error("insufficient balance");
 
       await txn.balance.update({
@@ -68,7 +72,6 @@ export const transferBalance = async (req: Request, res: Response) => {
         },
         data: {
           amount: senderBalance - value,
-          locked: sender.locked + value,
         },
       });
 
@@ -78,15 +81,6 @@ export const transferBalance = async (req: Request, res: Response) => {
         },
         data: {
           amount: receiver.amount + value,
-        },
-      });
-
-      await txn.balance.update({
-        where: {
-          userId: userId,
-        },
-        data: {
-          locked: sender.locked - value,
         },
       });
 

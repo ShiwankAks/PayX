@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import type { User } from '../types/types'
-import { useAuth } from '../context/AuthContext'
 import { userService } from '../api/userService'
 import { rupees } from '../utils/formatCurrency'
-
+import { useRequiredAuth } from '../hooks/useRequiredAuth'
 
 
 
@@ -17,15 +16,14 @@ function SendMoney() {
   const [submit, setSubmit] = useState<SubmitState>('idle')
   const [allReceiptents, setAllReceiptents] = useState<User[]>([])
  
-  const {user, getUser} = useAuth()
+  const {user, getUser} = useRequiredAuth()
   
   const getRecievers = async()=>{
     try {
       const response = await userService.getReceivers()
     setAllReceiptents(response.data.users)
-    console.log(response.data.users)
     } catch (error) {
-      
+      setSubmit("error")
     }
     
   }
@@ -51,9 +49,6 @@ function SendMoney() {
     getRecievers()
   },[])
 
-  if (!user) {
-    return <div>Error</div>
-  }
 
   return (
     <div className="min-h-screen bg-slate-50">
