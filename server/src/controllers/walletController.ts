@@ -3,6 +3,7 @@ import prisma from "../config/db.js";
 import axios from "axios";
 import crypto from "crypto";
 import { onRampSchema } from "../validation/onRamp.schema.js";
+import z from "zod";
 
 export const checkBalance = async (req: Request, res: Response) => {
   try {
@@ -40,10 +41,10 @@ export const addMoney = async (req: Request, res: Response) => {
   let transactionId;
   try {
     const result = onRampSchema.safeParse(req.body);
-    if (!result.data)
+    if (!result.success)
       return res
         .status(400)
-        .json({ error: result.error.flatten, message: "Invalid details" });
+        .json({ error: z.treeifyError(result.error), message: "Invalid details" });
         
     const { amount, provider } = result.data;
     const token = crypto.randomBytes(32).toString("hex");

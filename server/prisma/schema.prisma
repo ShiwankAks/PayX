@@ -1,10 +1,3 @@
-// On-ramp	External bank → your wallet
-// Transfer	Your wallet → another user's wallet
-// Withdrawal/off-ramp	Your wallet → external bank
-// Total balance = amount + locked
-// Imagine Alice initiates a transaction that requires ₹2,000 to be reserved.
-// You don't want another request to immediately spend that same ₹2,000.
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -54,6 +47,8 @@ model Transfer {
   createdAt  DateTime       @default(now())
   sender     User           @relation("SentTransfers", fields: [senderId], references: [id])
   receiver   User           @relation("ReceivedTransfers", fields: [receiverId], references: [id])
+
+  @@map("transfer")
 }
 
 enum OnRampStatus {

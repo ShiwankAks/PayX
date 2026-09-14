@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../config/db.js";
-import axios from "axios";
 import { transferSchema } from "../validation/transfer.schema.js";
+import z from "zod";
 
-export const findReciever = async (req: Request, res: Response) => {
+export const findReceiver = async (req: Request, res: Response) => {
   try {
     const senderId = Number(req.user?.id);
     const users = await prisma.user.findMany({
@@ -36,7 +36,7 @@ export const transferBalance = async (req: Request, res: Response) => {
     if (!result.success)
       return res
         .status(400)
-        .json({ error: result.error.flatten, message: "Enter valid inputs" });
+        .json({ error: z.treeifyError(result.error), message: "Enter valid inputs" });
 
     const { receiverId, value } = result.data;
 

@@ -57,7 +57,7 @@ export const verifyPaymentbank = async (req: Request, res: Response) => {
       if (!userBalance) {
         throw new Error("User not found");
       }
-      if (transaction.status == "Processing") {
+      if (transaction.status === "Processing") {
         await txn.balance.update({
           where: {
             userId: userId,

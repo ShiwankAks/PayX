@@ -1,4 +1,4 @@
-import { positive, z } from "zod";
+import {  z } from "zod";
 
 export const transferSchema = z.object({
   receiverId: z.number().int().positive(),
