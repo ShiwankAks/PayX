@@ -22,39 +22,42 @@ type Tab = 'transfers' | 'onramp'
 
 function RecentTransactions() {
   const [tab, setTab] = useState<Tab>('transfers')
-  const [view, setView] = useState<ViewState>('loaded')
+  const [transferView, setTransferView] = useState<ViewState>('loading')
+  const [onRampView, setOnRampView] = useState<ViewState>('loading')
   const [allTransfers, setAllTransfers] = useState<Transfer[]>([])
   const [allOnRampTrans, setAllOnRampTrans] = useState<OnRampTransaction[]>([])
-  const {user} = useRequiredAuth()
+  const { user } = useRequiredAuth()
 
- 
-    const getTransfers = async () => {
-      setView("loading")
-      try {
-        const response = await userService.getTransfers(3)
-        setAllTransfers(response.data.history)
-        setView("loaded")
-      } catch (error) {
-        setView("error")
-      }
+
+  const getTransfers = async () => {
+    setTransferView("loading")
+    try {
+      const response = await userService.getTransfers(3)
+      setAllTransfers(response.data.history)
+      if(response.data.history.length === 0) setTransferView("empty")
+      else setTransferView("loaded")
+    } catch (error) {
+      setTransferView("error")
     }
-  
-    const getOnRampTrans =async ()=>{
-      try {
-        setView("loading")
-        const res = await userService.getOnrampTransactions(3)
+  }
+
+  const getOnRampTrans = async () => {
+    try {
+      setOnRampView("loading")
+      const res = await userService.getOnrampTransactions(3)
       setAllOnRampTrans(res.data.transactions)
-      setView("loaded")
-      } catch (error) {
-        setView("error")
-      }
-      
+      if(res.data.transactions.length == 0) setOnRampView("empty")
+      else setOnRampView("loaded")
+    } catch (error) {
+      setOnRampView("error")
     }
 
-    useEffect(() => {
-        getTransfers()
-        getOnRampTrans()
-      }, [])
+  }
+
+  useEffect(() => {
+    getTransfers()
+    getOnRampTrans()
+  }, [])
 
 
   const tabClass = (active: boolean) =>
@@ -100,43 +103,57 @@ function RecentTransactions() {
         </div>
       </div>
 
-      {view === 'loading' && <LoadingState />}
-      {view === 'empty' && <EmptyState />}
-      {view === 'error' && <ErrorState onRetry={() => setView('loaded')} />}
+      {
+        tab === "transfers" && (
+          <>
+            {transferView === 'loading' && <LoadingState />}
+            {transferView === 'empty' && <EmptyState />}
+            {transferView === 'error' && <ErrorState onRetry={() => setTransferView('loaded')} />}
 
-      {view === 'loaded' && tab === 'transfers' && (
-        <ul className="divide-y divide-slate-100">
-          {allTransfers.map((t) => {
-            const incoming = t.receiverId === user.id
-            const other = incoming? t.sender.username : t.receiver.username 
-            return (
-              <TransactionRow
-                key={t.id}
-                incoming={incoming}
-                title={incoming ? `Received from ${other}` : `Sent to ${other}`}
-                subtitle={`${other} · ${when(t.createdAt)}`}
-                amount={t.amount}
-                status={t.status}
-              />
-            )
-          })}
-        </ul>
+            {transferView === 'loaded'  && (
+              <ul className="divide-y divide-slate-100">
+                {allTransfers.map((t) => {
+                  const incoming = t.receiverId === user.id
+                  const other = incoming ? t.sender.username : t.receiver.username
+                  return (
+                    <TransactionRow
+                      key={t.id}
+                      incoming={incoming}
+                      title={incoming ? `Received from ${other}` : `Sent to ${other}`}
+                      subtitle={`${other} · ${when(t.createdAt)}`}
+                      amount={t.amount}
+                      status={t.status}
+                    />
+                  )
+                })}
+              </ul>
+            )}
+          </>
+        )
+      }
+
+      {tab === "onramp" && (
+        <>
+          {onRampView === 'loading' && <LoadingState />}
+          {onRampView === 'empty' && <EmptyState />}
+          {onRampView === 'error' && <ErrorState onRetry={() => setOnRampView('loaded')} />}
+          {onRampView === 'loaded'  && (
+            <ul className="divide-y divide-slate-100">
+              {allOnRampTrans.map((o) => (
+                <TransactionRow
+                  key={o.id}
+                  incoming // on-ramp is always money into the wallet
+                  title="Added money"
+                  subtitle={`${o.provider} · ${when(o.startTime)}`}
+                  amount={o.amount}
+                  status={o.status}
+                />
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
-      {view === 'loaded' && tab === 'onramp' && (
-        <ul className="divide-y divide-slate-100">
-          {allOnRampTrans.map((o) => (
-            <TransactionRow
-              key={o.id}
-              incoming // on-ramp is always money into the wallet
-              title="Added money"
-              subtitle={`${o.provider} · ${when(o.startTime)}`}
-              amount={o.amount}
-              status={o.status}
-            />
-          ))}
-        </ul>
-      )}
     </section>
   )
 }

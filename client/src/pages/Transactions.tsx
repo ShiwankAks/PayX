@@ -23,10 +23,11 @@ type ViewState = 'loaded' | 'loading' | 'empty' | 'error'
 
 function Transactions() {
   const [tab, setTab] = useState<Tab>('transfers')
-  const [view, setView] = useState<ViewState>('loaded')
+  const [transferView, setTransferView] = useState<ViewState>('loading')
+  const [onRampView, setOnRampView] = useState<ViewState>('loading')
   const [allTransfers, setAllTransfers] = useState<Transfer[]>([])
   const [allOnRampTrans, setAllOnRampTrans] = useState<OnRampTransaction[]>([])
-  
+
 
   const tabClass = (active: boolean) =>
     `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${active
@@ -35,26 +36,28 @@ function Transactions() {
     }`
 
   const { user, loading } = useRequiredAuth()
- 
+
   const getTransfers = async () => {
-    setView("loading")
+    setTransferView("loading")
     try {
       const response = await userService.getTransfers()
       setAllTransfers(response.data.history)
-      setView("loaded")
+      if (response.data.history.length === 0) setTransferView("empty")
+      else setTransferView("loaded")
     } catch (error) {
-      setView("error")
+      setTransferView("error")
     }
   }
 
   const getOnRampTrans = async () => {
     try {
-      setView("loading")
+      setOnRampView("loading")
       const res = await userService.getOnrampTransactions()
       setAllOnRampTrans(res.data.transactions)
-      setView("loaded")
+      if (res.data.transactions.length === 0) setOnRampView("empty")
+      else setOnRampView("loaded")
     } catch (error) {
-      setView("error")
+      setOnRampView("error")
     }
 
   }
@@ -66,7 +69,7 @@ function Transactions() {
   }, [])
 
   if (loading) {
-    return <Loading/>
+    return <Loading />
   }
 
   return (
@@ -106,25 +109,6 @@ function Transactions() {
               </button>
             </div>
 
-            {/* UI-only: preview the loading/empty/error states. Remove when
-                you wire real data. */}
-            {/* <div className="inline-flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
-              {(['loaded', 'loading', 'empty', 'error'] as ViewState[]).map(
-                (s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setView(s)}
-                    className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${view === s
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-500 hover:bg-slate-100'
-                      }`}
-                  >
-                    {s}
-                  </button>
-                ),
-              )}
-            </div> */}
           </div>
 
           {/* Card */}
@@ -135,43 +119,54 @@ function Transactions() {
               </h2>
             </div>
 
-            {view === 'loading' && <LoadingState />}
-            {view === 'empty' && <EmptyState />}
-            {view === 'error' && <ErrorState onRetry={() => setView('loaded')} />}
+            {tab === "transfers" && (
+              <>
+                {transferView === 'loading' && <LoadingState />}
+                {transferView === 'empty' && <EmptyState />}
+                {transferView === 'error' && <ErrorState onRetry={() => setTransferView('loaded')} />}
 
-            {view === 'loaded' && tab === 'transfers' && (
-              <ul className="divide-y divide-slate-100">
-                {allTransfers.map((t) => {
-                  const incoming = t.receiverId === user.id
-                  const name = incoming ? t.sender.username : t.receiver.username
-                  return (
-                    <TransactionRow
-                      key={t.id}
-                      incoming={incoming}
-                      title={incoming ? `Received from ${name}` : `Sent to ${name}`}
-                      subtitle={`${incoming ? 'Received' : 'Sent'} · ${when(t.createdAt)}`}
-                      amount={t.amount}
-                      status={t.status}
-                    />
-                  )
-                })}
-              </ul>
+                {transferView === 'loaded' &&  (
+                  <ul className="divide-y divide-slate-100">
+                    {allTransfers.map((t) => {
+                      const incoming = t.receiverId === user.id
+                      const name = incoming ? t.sender.username : t.receiver.username
+                      return (
+                        <TransactionRow
+                          key={t.id}
+                          incoming={incoming}
+                          title={incoming ? `Received from ${name}` : `Sent to ${name}`}
+                          subtitle={`${incoming ? 'Received' : 'Sent'} · ${when(t.createdAt)}`}
+                          amount={t.amount}
+                          status={t.status}
+                        />
+                      )
+                    })}
+                  </ul>
+                )}
+              </>
+            )}
+            {tab === "onramp" && (
+              <>
+                {onRampView === 'loading' && <LoadingState />}
+                {onRampView === 'empty' && <EmptyState />}
+                {onRampView === 'error' && <ErrorState onRetry={() => setOnRampView('loaded')} />}
+                {onRampView === 'loaded'  && (
+                  <ul className="divide-y divide-slate-100">
+                    {allOnRampTrans.map((o) => (
+                      <TransactionRow
+                        key={o.id}
+                        incoming
+                        title="Added money"
+                        subtitle={`${o.provider} · ${when(o.startTime)}`}
+                        amount={o.amount}
+                        status={o.status}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </>
             )}
 
-            {view === 'loaded' && tab === 'onramp' && (
-              <ul className="divide-y divide-slate-100">
-                {allOnRampTrans.map((o) => (
-                  <TransactionRow
-                    key={o.id}
-                    incoming
-                    title="Added money"
-                    subtitle={`${o.provider} · ${when(o.startTime)}`}
-                    amount={o.amount}
-                    status={o.status}
-                  />
-                ))}
-              </ul>
-            )}
           </section>
         </div>
       </main>

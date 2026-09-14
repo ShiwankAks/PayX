@@ -198,7 +198,7 @@ function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-2 flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+                                className="mt-2 flex w-full items-center justify-center rounded-lg bg-slate-900 cursor-pointer px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
                             >
                                 {loading ? "Logging in..." : "Log in"}
                             </button>
