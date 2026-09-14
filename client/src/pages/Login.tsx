@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { z } from 'zod'
 import { authService } from "../api/authService";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
@@ -75,10 +75,7 @@ function Login() {
         try {
             const res = await authService.login(values.email, values.password)
             const data = res.data;
-            // console.log(data)
-            // The backend returns a normal response for failures like a bad
-            // password, so check both the body flags and the token presence.
-            if (data.success === false || data.status >= 400 || !data.token) {
+            if (data.success === false  || !data.token) {
                 throw new Error(data.message ?? "Something went wrong.");
             }
 
@@ -210,12 +207,12 @@ function Login() {
 
                     <p className="mt-6 text-center text-sm text-slate-600">
                         Don't have an account?{" "}
-                        <a
-                            href="/signup"
+                        <Link
+                            to="/signup"
                             className="font-medium text-slate-900 hover:underline"
                         >
                             Sign up
-                        </a>
+                        </Link>
                     </p>
                 </div>
 

@@ -7,7 +7,9 @@ function Navbar() {
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const {user} = useRequiredAuth()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const mobileRef = useRef<HTMLDivElement>(null)
+  const { user } = useRequiredAuth()
 
   // Close the dropdown when clicking anywhere outside of it.
   useEffect(() => {
@@ -20,6 +22,21 @@ function Navbar() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
+
+  // Close the mobile menu when clicking anywhere outside of it.
+  useEffect(() => {
+    if (!mobileOpen) return
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        mobileRef.current &&
+        !mobileRef.current.contains(event.target as Node)
+      ) {
+        setMobileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [mobileOpen])
 
 
   const linkClass = (active: boolean) =>
@@ -74,45 +91,128 @@ function Navbar() {
           </Link>
         </nav>
 
-        {/* User */}
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            className="flex items-center gap-2.5 rounded-lg py-1.5 pl-1.5 pr-2 transition-colors hover:bg-slate-100"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
-              {user.username.slice(0,1).toUpperCase()}
-            </span>
-            <span className="hidden text-sm font-medium text-slate-700 sm:block">
-              {user.username}
-            </span>
-            <svg
-              className={`h-4 w-4 text-slate-400 transition-transform ${menuOpen ? 'rotate-180' : ''
-                }`}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+        {/* Right side: mobile hamburger + user dropdown */}
+        <div className="flex items-center gap-1">
+          {/* Mobile menu (hamburger) — small screens only */}
+          <div className="relative sm:hidden" ref={mobileRef}>
+            <button
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
             >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
+              {mobileOpen ? (
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              ) : (
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 12h16" />
+                  <path d="M4 6h16" />
+                  <path d="M4 18h16" />
+                </svg>
+              )}
+            </button>
 
-          {/* Dropdown */}
-          {menuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+            {/* Mobile nav panel */}
+            {mobileOpen && (
+              <nav
+                id="mobile-nav"
+                className="absolute right-0 mt-2 flex w-48 flex-col gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+              >
+                <Link
+                  to="/"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClass(pathname === '/')}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/send"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClass(pathname === '/send')}
+                >
+                  Send
+                </Link>
+                <Link
+                  to="/add-money"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClass(pathname === '/add-money')}
+                >
+                  Add Money
+                </Link>
+                <Link
+                  to="/transactions"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkClass(pathname === '/transactions')}
+                >
+                  Transactions
+                </Link>
+              </nav>
+            )}
+          </div>
+
+          {/* User */}
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              className="flex items-center gap-2.5 rounded-lg py-1.5 pl-1.5 pr-2 transition-colors hover:bg-slate-100"
             >
-              <LogoutButton/>
-            </div>
-          )}
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                {user.username.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="hidden text-sm font-medium text-slate-700 sm:block">
+                {user.username}
+              </span>
+              <svg
+                className={`h-4 w-4 text-slate-400 transition-transform ${menuOpen ? 'rotate-180' : ''
+                  }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {/* Dropdown */}
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+              >
+                <LogoutButton />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

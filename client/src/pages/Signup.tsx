@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { z } from 'zod'
 import { authService } from "../api/authService";
+import { Link } from "react-router-dom";
 
 
 // const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -264,20 +265,20 @@ function Signup() {
                     {
                         success ?
                             <p className="mt-6 text-center text-sm text-slate-600">You're all set!
-                                <a href="/login"
+                                <Link to="/login"
                                     className="font-medium text-slate-900 hover:underline"
                                 >Log in to your account
-                                </a>
+                                </Link>
                             </p>
                             :
                             <p className="mt-6 text-center text-sm text-slate-600">
                                 Already have an account?{" "}
-                                <a
-                                    href="/login"
+                                <Link
+                                    to="/login"
                                     className="font-medium text-slate-900 hover:underline"
                                 >
                                     Log in
-                                </a>
+                                </Link>
                             </p>
                     }
 

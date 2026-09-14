@@ -5,10 +5,6 @@ import { rupees } from "../utils/formatCurrency"
 function BalanceCard() {
     const { user } = useRequiredAuth()
 
-    if (!user || !user.balance.amount) {
-        return <div>Error</div>
-    }
-
     const formatedBalance = rupees(user.balance.amount)
     const formatedLocked = rupees(user.balance.locked)
     const total = user.balance.amount + user.balance.locked
