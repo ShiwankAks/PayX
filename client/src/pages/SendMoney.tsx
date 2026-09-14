@@ -14,14 +14,14 @@ function SendMoney() {
   const [recipient, setRecipient] = useState<User | null>(null)
   const [amount, setAmount] = useState('')
   const [submit, setSubmit] = useState<SubmitState>('idle')
-  const [allReceiptents, setAllReceiptents] = useState<User[]>([])
+  const [allRecipients, setAllRecipients] = useState<User[]>([])
  
   const {user, getUser} = useRequiredAuth()
   
-  const getRecievers = async()=>{
+  const getReceivers = async()=>{
     try {
       const response = await userService.getReceivers()
-    setAllReceiptents(response.data.users)
+    setAllRecipients(response.data.users)
     } catch (error) {
       setSubmit("error")
     }
@@ -46,7 +46,7 @@ function SendMoney() {
       }
 
   useEffect(()=>{
-    getRecievers()
+    getReceivers()
   },[])
 
 
@@ -103,12 +103,12 @@ function SendMoney() {
               <>
                 {/* Results */}
                 <ul className="mt-3 divide-y divide-slate-100">
-                  {allReceiptents.length === 0 && (
+                  {allRecipients.length === 0 && (
                     <li className="py-6 text-center text-sm text-slate-500">
                       No users found for “{query}”.
                     </li>
                   )}
-                  {allReceiptents.map((u) => (
+                  {allRecipients.map((u) => (
                     <li key={u.id}>
                       <button
                         type="button"
