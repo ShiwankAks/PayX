@@ -16,7 +16,7 @@ const verifyToken = async(req:Request,res:Response,next:NextFunction)=>{
 
     } catch (error) {
         console.log(error)
-        return res.status(401).json({status:"failed",message:"Please login"})
+        return res.status(401).json({success:false,message:"Please login"})
     }
 }
 
