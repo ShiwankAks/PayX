@@ -21,7 +21,7 @@ function AddMoney() {
  
   
 
-  const amountpaise = Number(amount)*100
+  const amountpaise = Math.round(Number(amount)*100)
   const amountValid = amount !== '' && amountpaise > 0
   const canAdd = amountValid && provider !== null && submit !== 'loading'
   

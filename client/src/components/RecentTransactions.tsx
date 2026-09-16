@@ -46,7 +46,7 @@ function RecentTransactions() {
       setOnRampView("loading")
       const res = await userService.getOnrampTransactions(3)
       setAllOnRampTrans(res.data.transactions)
-      if(res.data.transactions.length == 0) setOnRampView("empty")
+      if(res.data.transactions.length === 0) setOnRampView("empty")
       else setOnRampView("loaded")
     } catch (error) {
       setOnRampView("error")
@@ -108,7 +108,7 @@ function RecentTransactions() {
           <>
             {transferView === 'loading' && <LoadingState />}
             {transferView === 'empty' && <EmptyState />}
-            {transferView === 'error' && <ErrorState onRetry={() => getTransfers} />}
+            {transferView === 'error' && <ErrorState onRetry={() => getTransfers()} />}
 
             {transferView === 'loaded'  && (
               <ul className="divide-y divide-slate-100">
@@ -136,7 +136,7 @@ function RecentTransactions() {
         <>
           {onRampView === 'loading' && <LoadingState />}
           {onRampView === 'empty' && <EmptyState />}
-          {onRampView === 'error' && <ErrorState onRetry={() =>getOnRampTrans} />}
+          {onRampView === 'error' && <ErrorState onRetry={() =>getOnRampTrans()} />}
           {onRampView === 'loaded'  && (
             <ul className="divide-y divide-slate-100">
               {allOnRampTrans.map((o) => (

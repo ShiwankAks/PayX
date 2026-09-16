@@ -93,7 +93,7 @@ function Signup() {
 
             // The backend returns a normal response for the "already exists" case,
             // so check both the HTTP status and the body.
-            if (data.success === false || data.status >= 400) {
+            if (data.success === false) {
                 throw new Error(data.message ?? "Something went wrong.");
             }
 

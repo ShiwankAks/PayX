@@ -28,7 +28,7 @@ function SendMoney() {
     
   }
 
-  const amountNumber = Number(amount)*100
+  const amountNumber = Math.round(Number(amount)*100)
   const amountValid = amount !== '' && amountNumber > 0
   const canSend = recipient !== null && amountValid && submit !== 'loading'
 

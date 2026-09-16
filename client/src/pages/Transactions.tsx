@@ -123,7 +123,7 @@ function Transactions() {
               <>
                 {transferView === 'loading' && <LoadingState />}
                 {transferView === 'empty' && <EmptyState />}
-                {transferView === 'error' && <ErrorState onRetry={() => getTransfers} />}
+                {transferView === 'error' && <ErrorState onRetry={() => getTransfers()} />}
 
                 {transferView === 'loaded' &&  (
                   <ul className="divide-y divide-slate-100">
@@ -149,7 +149,7 @@ function Transactions() {
               <>
                 {onRampView === 'loading' && <LoadingState />}
                 {onRampView === 'empty' && <EmptyState />}
-                {onRampView === 'error' && <ErrorState onRetry={() =>getOnRampTrans} />}
+                {onRampView === 'error' && <ErrorState onRetry={() =>getOnRampTrans()} />}
                 {onRampView === 'loaded'  && (
                   <ul className="divide-y divide-slate-100">
                     {allOnRampTrans.map((o) => (
