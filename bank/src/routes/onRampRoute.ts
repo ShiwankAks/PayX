@@ -1,5 +1,5 @@
 import express from 'express'
-import { onRampTransfer } from '../controllers/onRampController'
+import { onRampTransfer } from '../controllers/onRampController.js'
 
 const onRampRouter = express.Router()
 
