@@ -1,0 +1,23 @@
+services:
+
+  client:
+    build: ./client
+    container_name: payx-client
+    ports:
+      - "8080:80"
+    
+  server:
+    build: ./server
+    container_name: payx-server
+    env_file:
+      - ./server/.env
+    ports:
+      - "3000:3000"
+
+  bank:
+    build: ./bank
+    container_name: payx-bank
+    env_file:
+      - ./bank/.env
+    ports:
+      - "3001:3001"
