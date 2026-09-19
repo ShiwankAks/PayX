@@ -74,7 +74,7 @@ function RecentTransactions() {
           Recent Transactions
         </h2>
         <Link
-          to={tab === 'transfers' ? '/transactions' : '/transactions/on-ramp'}
+          to={tab === 'transfers' ? '/transactions' : '/transactions'}
           className="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700"
         >
           View all
