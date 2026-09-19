@@ -7,6 +7,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // Middlewares
+app.set("trust proxy", 1);
 app.use(helmet())
 app.use(express.json())
 app.use(cors(
