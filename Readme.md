@@ -1,4 +1,4 @@
-# PayX — Wallet & Payment System
+# PayWallet — Wallet & Payment System
 
 A full-stack digital wallet application built with React, Node.js, TypeScript, and PostgreSQL. Containerised with Docker and deployed on AWS EC2 with Nginx as a reverse proxy and SSL/TLS termination.
 
@@ -20,7 +20,7 @@ A full-stack digital wallet application built with React, Node.js, TypeScript, a
 
 ## Architecture
 
-PayX is split into three independently containerised services orchestrated with Docker Compose:
+PayWallet is split into three independently containerised services orchestrated with Docker Compose:
 
 ```
 Browser
@@ -145,7 +145,7 @@ All monetary values are stored as **integers in paisa** (₹1 = 100 paisa) to av
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/PayX.git
+git clone https://github.com/ShiwankAks/PayX.git
 cd PayX
 ```
 
