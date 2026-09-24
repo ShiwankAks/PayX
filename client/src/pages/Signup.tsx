@@ -19,7 +19,7 @@ const signupSchema = z.object({
     phone: z
         .string()
         .trim()
-        .regex(/^[+]?[0-9\s-]{7,15}$/, "Enter a valid phone number."),
+        .regex(/^[+]?[0-9\s-]{7,10}$/, "Enter a valid phone number."),
 
     password: z
         .string()
