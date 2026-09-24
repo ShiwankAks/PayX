@@ -1,0 +1,19 @@
+services:
+
+  server:
+    build: ./server
+    container_name: payx-server-dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - bank
+
+  bank:
+    build: ./bank
+    container_name: payx-bank-dev
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./bank/.env
